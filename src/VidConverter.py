@@ -1,5 +1,6 @@
 import PIL.Image as Image
 import numpy as np
+import cv2
 import sys
 import os
 
@@ -12,7 +13,6 @@ class Converter:
     
     def __init__(self):
         self.fps = 10
-        self.video = None
     
     def frame2ascii(self, frame):
         # loading & converting image to grayscale
@@ -26,7 +26,7 @@ class Converter:
         text = ""
         
         for y in range(0, img.shape[0], 25):
-            for x in range(0, img.shape[1], 8):
+            for x in range(0, img.shape[1], 10):
                 pix = img[y][x]
                 text += self.density[round(((pix/255)) * len(self.density))]
             
@@ -38,14 +38,23 @@ class Converter:
         # arr of strings
         frames = []
         
+        # breakdown + conversion of frames
+        vidcap = cv2.VideoCapture(video)
+        
+        while True:
+            success, frame = vidcap.read()
+        
+            if not success:
+                break
+            
+            string_frame = self.frame2ascii(frame)     
+            frames.append(string_frame)
+            
         return frames
 
-
 def main():
-    filename = "13192.jpg"
-    img1 = Image.open(cdir+filename)
-    c = Converter(None)
-    print(c.frame2ascii(img1))
+    c = Converter()
+    ascii_vid = c.breakdown("samplevid.mp4")
 
 if __name__ == '__main__':
     main()
