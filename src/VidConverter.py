@@ -1,56 +1,114 @@
+import Utils
 import PIL.Image as Image
 import numpy as np
 import cv2
+import logging
+import time
 import sys
 import os
 
-# ONLY FOR 1080P 1920 x 1080
-
 cdir = os.path.split(__file__)[0] + "\\"
+logger = logging.getLogger("Utils.Vid2ASCII.VidConverter")
 
+#density = [' ', ' ', '_', '_', '.', ',', '`', '`', '-', ':', ';', '+', '*', '?', '%', 'S', 'W', 'M', '#', '@', '$'][::-1]
+#density = list("""$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'........___        """)
+#density = list("""$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'........___        """)
+
+def play(frame, fps, actualfps):
+    sys.stdout.write(f"{frame}\nFPS: {actualfps}\nEXPECTED: {fps}\r")
+
+def playall(frames, fps):
+    for f in frames:
+        t = time.time()
+        time.sleep(1/fps)
+        play(f, fps, 1/(time.time() - t))
+        
 class Converter:
-    density = list("""$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'........___        """)
-    
     def __init__(self):
-        self.fps = 10
-    
-    def frame2ascii(self, frame):
-        # loading & converting image to grayscale
-        img = np.asarray(frame)
-        assert img.shape == (1080, 1920, 3), "Media must be 1920x1080 (1080p)"
+        self.density = [' ', ' ', '_', '_', '.', ',', '`', '`', '-', ':', ';', '+', '*', '?', '%', 'S', 'W', 'M', '#', '@', '$'][::-1] #TODO fix this with original once contrast stuff is done
         
-        greyscale_conv = np.array([0.2989, 0.587, 0.114])
-        img = np.tensordot(img, greyscale_conv, axes=([2], [0]))
+    def load(self, filepath, playback):
+        video = cv2.VideoCapture(filepath)
         
-        # NOTE: loop step sizes are only configured for 1080p, change for different resolutions
-        text = ""
+        if playback:
+            self.full_breakdown(video)
+        else:
+            self.realtime_breakdown(video)
         
-        for y in range(0, img.shape[0], 25):
-            for x in range(0, img.shape[1], 10):
-                pix = img[y][x]
-                text += self.density[round(((pix/255)) * len(self.density))]
-            
-            text += "\n"
-        
-        return text
-    
-    def breakdown(self, video):
-        # arr of strings
+    def full_breakdown(self, video):
+        fps = video.get(cv2.CAP_PROP_FPS)
         frames = []
         
-        # breakdown + conversion of frames
-        vidcap = cv2.VideoCapture(video)
-        
         while True:
-            success, frame = vidcap.read()
+            t = time.time()
+            success, frame = video.read()
         
             if not success:
                 break
             
-            string_frame = self.frame2ascii(frame)     
-            frames.append(string_frame)
+            frames.append(self.frame2ascii(frame))  
             
-        return frames
+        self.playall(frames, fps)
+            
+    def realtime_breakdown(self, video):
+        fps = video.get(cv2.CAP_PROP_FPS)
+        
+        while True:
+            t = time.time()
+            success, frame = video.read()
+        
+            if not success:
+                break
+            
+            self.play(self.frame2ascii(frame), fps, 1/(time.time() - t))
+    
+    def frame2ascii(self, frame):
+        """
+        IMAGE PREPROCESSING
+        """
+        
+        ##TODO next up implement contrast
+        
+        img = np.asarray(frame)
+        
+        # change resolution, numbers based on tested values for 1080p video
+        xStep = int(10 * (img.shape[1]/1920))
+        yStep = int(20 * (img.shape[0]/1080))
+        
+        x_neighbour = xStep // 2 + 1
+        y_neighbour = yStep // 2 + 1
+        
+        # grayscale conversion
+        greyscale_img = np.tensordot(img, [0.2989, 0.587, 0.114], axes=([2], [0]))
+        text = ""
+        
+        #colourmap = np.zeros((greyscale_img.shape[0] // yStep + 1, greyscale_img.shape[1] // xStep + 1, 3))
+        
+        for y in range(0, greyscale_img.shape[0], yStep): 
+            for x in range(0, greyscale_img.shape[1], xStep):
+                
+                # greyscale conversion
+                pix = greyscale_img[y][x]
+                text += self.density[round(((pix/255)) * len(self.density))]
+                
+                # colour average
+                """ COLOUR IMPLEMENTATION BELOW, ON HOLD UNTIL I CAN BOTHER TO FIND A MORE EFFICIENT METHOD (IS MAD SLOW SEND HALP)
+                xLow = x - x_neighbour if not x - x_neighbour < 0 else 0
+                yLow = y - y_neighbour if not y - y_neighbour < 0 else 0
+                
+                xHigh = x + x_neighbour if not x + x_neighbour > greyscale_img.shape[1] - 1 else greyscale_img.shape[1] - 1
+                yHigh = y + y_neighbour if not y + y_neighbour > greyscale_img.shape[0] - 1 else greyscale_img.shape[0] - 1
+                
+                slice_colour = img[yLow:yHigh, xLow:xHigh, :]
+                flattened = np.reshape(slice_colour, (slice_colour.shape[0] * slice_colour.shape[1], 3))
+                mean_colour = np.mean(flattened, axis=0)
+                colourmap[y // yStep, x // xStep] = mean_colour
+                """
+                
+            text += "\n"
+        
+        # TODO test yield with generator
+        return text # return text, colourmap
 
 def main():
     c = Converter()
