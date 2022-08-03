@@ -15,10 +15,16 @@ class Vid2ASCII:
     def play_vid(self, args):
         if args.file is not None:
             self.vidc.load(args.file, args.playback)
-        
-def play(url):
-    player = Vid2ASCII()
-    player.play_url(url)
+            
+        elif args.video is not None:
+            tempdir = self.yts.scrape_video(args.video)
+            
+            file = sorted([os.path.join(tempdir, i) for i in os.listdir(tempdir)], key=os.path.getmtime)[-1]
+            self.vidc.load(file, args.playback)
+            
+            self.yts.reset()
+            
+            #error when file is already downloaded
 
 if __name__ == '__main__':
     args = Utils.parser.parse_args()
