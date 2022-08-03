@@ -7,12 +7,15 @@ import time
 import sys
 import os
 
+#TODO NOTE in future when implementing audio playback may need to add cli player class back
+
 cdir = os.path.split(__file__)[0] + "\\"
 logger = logging.getLogger("Utils.Vid2ASCII.VidConverter")
 
 #density = [' ', ' ', '_', '_', '.', ',', '`', '`', '-', ':', ';', '+', '*', '?', '%', 'S', 'W', 'M', '#', '@', '$'][::-1]
 #density = list("""$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'........___        """)
 #density = list("""$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'........___        """)
+#density = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`\'.            "
 
 def play(frame, fps, actualfps):
     sys.stdout.write(f"{frame}\nFPS: {actualfps}\nEXPECTED: {fps}\r")
@@ -48,7 +51,7 @@ class Converter:
             
             frames.append(self.frame2ascii(frame))  
             
-        self.playall(frames, fps)
+        playall(frames, fps)
             
     def realtime_breakdown(self, video):
         fps = video.get(cv2.CAP_PROP_FPS)
@@ -60,7 +63,7 @@ class Converter:
             if not success:
                 break
             
-            self.play(self.frame2ascii(frame), fps, 1/(time.time() - t))
+            play(self.frame2ascii(frame), fps, 1/(time.time() - t))
     
     def frame2ascii(self, frame):
         """
@@ -88,8 +91,8 @@ class Converter:
             for x in range(0, greyscale_img.shape[1], xStep):
                 
                 # greyscale conversion
-                pix = greyscale_img[y][x]
-                text += self.density[round(((pix/255)) * len(self.density))]
+                pix = greyscale_img[y, x]
+                text += self.density[np.floor(pix / 256 * len(self.density)).astype(int)]
                 
                 # colour average
                 """ COLOUR IMPLEMENTATION BELOW, ON HOLD UNTIL I CAN BOTHER TO FIND A MORE EFFICIENT METHOD (IS MAD SLOW SEND HALP)
@@ -109,11 +112,3 @@ class Converter:
         
         # TODO test yield with generator
         return text # return text, colourmap
-
-def main():
-    c = Converter()
-    ascii_vid = c.breakdown("samplevid.mp4")
-
-if __name__ == '__main__':
-    main()
-    
