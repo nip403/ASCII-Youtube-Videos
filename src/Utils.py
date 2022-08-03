@@ -37,10 +37,10 @@ other.add_argument(
     dest="playback",
     type=int,
     choices=[0, 1],
-    default=1,
+    default=0,
     help="""Playback mode:
-                0: Play ASCII video as each frame loads (fps is not fixed, will often be slower than actual video) 
-      (DEFAULT) 1: Play ASCII video once whole video is processed (fps displayed per video specs)
+      (DEFAULT) 0: Play ASCII video as each frame loads (variable fps) 
+                1: Play ASCII video once whole video is processed (slower but reliable fps)
 """,
     metavar="bool"
 )
