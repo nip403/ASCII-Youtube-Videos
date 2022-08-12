@@ -3,7 +3,7 @@ Command line tool which converts videos into ASCII.
 
 # Usage
 ```
-usage: Vid2ASCII.py [-h] [--yt VIDEO] [--fp filepath] [--fullplayback bool] [--logger bool] [--delete bool]
+usage: Vid2ASCII.py [-h] [--yt VIDEO] [--fp filepath] [--fullplayback bool] [--delete bool]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -19,10 +19,6 @@ Other options:
                         Playback mode:
                               (DEFAULT) 0: Play ASCII video as each frame loads (variable fps)
                                         1: Play ASCII video once whole video is processed (slower but reliable fps)
-  --logger bool, -l bool
-                        Toggle logger:
-                                        0: Only display errors/warnings
-                              (DEFAULT) 1: Display all logs
   --delete bool, -d bool
                         Delete downloaded video after playback (only for provided --yt/--url):
                                         0: Keep in temp directory
