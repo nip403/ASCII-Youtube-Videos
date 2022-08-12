@@ -32,7 +32,7 @@ class Scraper:
             ydl.download([url])
             
         return os.path.dirname(__file__) + "\\temp\\"
-        
+            
     def get_search(self, name):
         self.driver.get(self.search + name.replace(" ", "+"))
         self.driver.execute_script("var scrollingElement = (document.scrollingElement || document.body);scrollingElement.scrollTop = scrollingElement.scrollHeight;")
