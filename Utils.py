@@ -42,7 +42,7 @@ other.add_argument(
       (DEFAULT) 0: Play ASCII video as each frame loads (variable fps) 
                 1: Play ASCII video once whole video is processed (slower but reliable fps)""",
     metavar="bool"
-)
+)   
 
 other.add_argument(
     "--delete",
