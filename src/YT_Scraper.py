@@ -1,9 +1,13 @@
+import Utils
 import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import chromedriver_autoinstaller
 import youtube_dl 
+import logging
 import os
+
+logger = logging.getLogger("Utils.Vid2ASCII")
 
 class Scraper:
     def __init__(self):
@@ -20,7 +24,7 @@ class Scraper:
             self.scrape_video(self.get_search(url))
             return os.path.dirname(__file__) + "\\temp\\"
         
-        ydl_opts= {
+        ydl_opts = {
             "format": "22",
             "continue": True,
             "outtmpl": os.path.dirname(__file__) + "\\temp\\%(uploader)s - %(title)s.%(ext)s",
