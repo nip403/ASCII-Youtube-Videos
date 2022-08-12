@@ -23,8 +23,6 @@ class Vid2ASCII:
             self.vidc.load(file, args.playback)
             
             self.yts.reset()
-            
-            #error when file is already downloaded
 
 if __name__ == '__main__':
     args = Utils.parser.parse_args()
