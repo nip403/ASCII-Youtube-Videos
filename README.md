@@ -1,5 +1,5 @@
 # ASCII-Youtube-Videos
-Tool which converts urls to ASCII videos.
+Command line tool which converts videos into ASCII.
 
 # Usage
 ```
