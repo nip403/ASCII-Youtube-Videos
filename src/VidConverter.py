@@ -2,7 +2,6 @@ import Utils
 import PIL.Image as Image
 import numpy as np
 import cv2
-import logging
 import time
 import sys
 import os
@@ -19,18 +18,12 @@ PROGRESS_BAR_LENGTH = 50
 #TODO asciimatics
 
 cdir = os.path.split(__file__)[0] + "\\"
-logger = logging.getLogger("Utils.Vid2ASCII.VidConverter")
-
 assert RESOLUTION_SCALE > 0
 PROGRESS_BAR_LENGTH //= RESOLUTION_SCALE
 
 def play(frame, fps, actualfps, framecounter, frametotal):
-    progress = framecounter/frametotal
-    for _ in range(15):
-        sys.stdout.write("\x1b[1A\x1b[2K")
-    sys.stdout.write(f"{frame}\nFPS: {round(actualfps, 1)}\nEXPECTED: {fps}     {round(progress * 100 + 0.01, 2)}% PROGRESS |{'#' * (int(PROGRESS_BAR_LENGTH * progress) + 1)}{'-' * ((PROGRESS_BAR_LENGTH - int(PROGRESS_BAR_LENGTH * progress)) - 1)}|")
-    
-    
+    progress = framecounter / frametotal
+    sys.stdout.write(f"{frame}\nFPS: {round(actualfps, 1)}\nEXPECTED: {fps}     {round(progress * 100 + 0.01, 2)}% PROGRESS |{'#' * (int(PROGRESS_BAR_LENGTH * progress) + 1)}{'-' * ((PROGRESS_BAR_LENGTH - int(PROGRESS_BAR_LENGTH * progress)) - 1)}|\n")
 
 def playall(frames, fps):
     total = len(frames)
