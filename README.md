@@ -1,6 +1,8 @@
 # ASCII-Youtube-Videos
 Command line tool which converts videos into ASCII.
 
+Change RESOLUTION_SCALE const under VidConverter.py to suit desired output size
+
 # Usage
 ```
 usage: Vid2ASCII.py [-h] [--yt VIDEO] [--fp filepath] [--fullplayback bool] [--delete bool]
