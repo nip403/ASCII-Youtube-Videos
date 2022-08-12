@@ -3,19 +3,16 @@ import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import chromedriver_autoinstaller
-import youtube_dl 
-import logging
+import youtube_dl
 import os
-
-logger = logging.getLogger("Utils.Vid2ASCII")
 
 class Scraper:
     def __init__(self):
         opt = webdriver.ChromeOptions()
-        opt.add_argument("--start-maximized")
         opt.add_argument("headless")
 
         chromedriver_autoinstaller.install()
+        
         self.driver = webdriver.Chrome(options=opt)
         self.search = r"https://www.youtube.com/results?search_query="
         
@@ -28,8 +25,8 @@ class Scraper:
             "format": "22",
             "continue": True,
             "outtmpl": os.path.dirname(__file__) + "\\temp\\%(uploader)s - %(title)s.%(ext)s",
-   #        'quiet': True,
-          }
+            "verbose": True,
+        }
         
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
