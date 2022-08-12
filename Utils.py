@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 
-valid_ext = [
+valid_ext = [ # TODO 
     ".mp4"
 ]
 
@@ -40,22 +40,20 @@ other.add_argument(
     default=0,
     help="""Playback mode:
       (DEFAULT) 0: Play ASCII video as each frame loads (variable fps) 
-                1: Play ASCII video once whole video is processed (slower but reliable fps)
-""",
+                1: Play ASCII video once whole video is processed (slower but reliable fps)""",
     metavar="bool"
 )
 
 other.add_argument(
-    "--logger",
-    "-l", 
-    dest="log",
+    "--delete",
+    "-d", 
+    dest="delete",
     type=int,
     choices=[0, 1],
     default=1,
-    help="""Toggle logger:
-                0: Only display errors/warnings
-      (DEFAULT) 1: Display all logs
-""",
+    help="""Delete downloaded video after playback (only for provided --yt/--url):
+                0: Keep in temp directory
+      (DEFAULT) 1: Delete""",
     metavar="bool"
 )
 
