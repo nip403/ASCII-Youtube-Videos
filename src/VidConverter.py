@@ -7,28 +7,42 @@ import time
 import sys
 import os
 
-#TODO NOTE in future when implementing audio playback may need to add cli player class back
+"""
+RESOLUTION_SCALE: change to suit terminal size
+
+0 < scale <= 1: upscale if video can be enlarged
+scale > 1: downscale if video is too big to fit terminal
+"""
+RESOLUTION_SCALE = 1
+PROGRESS_BAR_LENGTH = 50
+
+#TODO asciimatics
 
 cdir = os.path.split(__file__)[0] + "\\"
 logger = logging.getLogger("Utils.Vid2ASCII.VidConverter")
 
-#density = [' ', ' ', '_', '_', '.', ',', '`', '`', '-', ':', ';', '+', '*', '?', '%', 'S', 'W', 'M', '#', '@', '$'][::-1]
-#density = list("""$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'........___        """)
-#density = list("""$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'........___        """)
-#density = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`\'.            "
+assert RESOLUTION_SCALE > 0
+PROGRESS_BAR_LENGTH //= RESOLUTION_SCALE
 
-def play(frame, fps, actualfps):
-    sys.stdout.write(f"{frame}\nFPS: {actualfps}\nEXPECTED: {fps}\r")
+def play(frame, fps, actualfps, framecounter, frametotal):
+    progress = framecounter/frametotal
+    for _ in range(15):
+        sys.stdout.write("\x1b[1A\x1b[2K")
+    sys.stdout.write(f"{frame}\nFPS: {round(actualfps, 1)}\nEXPECTED: {fps}     {round(progress * 100 + 0.01, 2)}% PROGRESS |{'#' * (int(PROGRESS_BAR_LENGTH * progress) + 1)}{'-' * ((PROGRESS_BAR_LENGTH - int(PROGRESS_BAR_LENGTH * progress)) - 1)}|")
+    
+    
 
 def playall(frames, fps):
-    for f in frames:
+    total = len(frames)
+    
+    for n, f in enumerate(frames):
         t = time.time()
         time.sleep(1/fps)
-        play(f, fps, 1/(time.time() - t))
+        play(f, fps, 1/(time.time() - t), n, total)
         
 class Converter:
     def __init__(self):
-        self.density = [' ', ' ', '_', '_', '.', ',', '`', '`', '-', ':', ';', '+', '*', '?', '%', 'S', 'W', 'M', '#', '@', '$'][::-1] #TODO fix this with original once contrast stuff is done
+        self.density = [' ', ' ', '_', '_', '.', ',', '`', '`', '-', ':', ';', '+', '*', '?', '%', 'S', 'W', 'M', '#', '@', '$'][::-1]
         
     def load(self, filepath, playback):
         video = cv2.VideoCapture(filepath)
@@ -55,6 +69,8 @@ class Converter:
             
     def realtime_breakdown(self, video):
         fps = video.get(cv2.CAP_PROP_FPS)
+        framecount = 0
+        total = video.get(cv2.CAP_PROP_FRAME_COUNT)
         
         while True:
             t = time.time()
@@ -63,20 +79,21 @@ class Converter:
             if not success:
                 break
             
-            play(self.frame2ascii(frame), fps, 1/(time.time() - t))
+            play(self.frame2ascii(frame), fps, 1/(time.time() - t), framecount, total)
+            framecount += 1
     
     def frame2ascii(self, frame):
         """
         IMAGE PREPROCESSING
         """
         
-        ##TODO next up implement contrast
+        ##TODO implement contrast
         
         img = np.asarray(frame)
         
         # change resolution, numbers based on tested values for 1080p video
-        xStep = int(10 * (img.shape[1]/1920))
-        yStep = int(20 * (img.shape[0]/1080))
+        xStep = int(10 * (img.shape[1]/1920) * RESOLUTION_SCALE)
+        yStep = int(20 * (img.shape[0]/1080) * RESOLUTION_SCALE)
         
         x_neighbour = xStep // 2 + 1
         y_neighbour = yStep // 2 + 1
@@ -112,3 +129,10 @@ class Converter:
         
         # TODO test yield with generator
         return text # return text, colourmap
+
+'''
+density = [' ', ' ', '_', '_', '.', ',', '`', '`', '-', ':', ';', '+', '*', '?', '%', 'S', 'W', 'M', '#', '@', '$'][::-1]
+density = list("""$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'........___        """)
+density = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`\'.            "
+self.density = ["@", " "]
+'''
